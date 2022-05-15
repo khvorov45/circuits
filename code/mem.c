@@ -87,11 +87,11 @@ varenaAllocatorProc(void* data, AllocatorMode mode, i32 size, i32 align, void* o
 	} break;
 
 	case AllocatorMode_Free: {
-		assert(!"VirutalArena called with Free");
+		assert(!"VirtualArena called with Free");
 	} break;
 
 	case AllocatorMode_Resize: {
-		assert(!"VirutalArena called with Resize");
+		assert(!"VirtualArena called with Resize");
 	} break;
 	}
 
