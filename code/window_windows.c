@@ -14,10 +14,16 @@ windowProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
 	AppWindow* window = (AppWindow*)GetWindowLongPtrW(hwnd, GWLP_USERDATA);
 
 	switch (message) {
-	case WM_CLOSE: case WM_DESTROY:
+	case WM_CLOSE: case WM_DESTROY: {
 		window->isRunning = false;
 		window->platform.inputModified = true;
+	} break;
+	
+	case WM_PAINT: {
+		window->platform.inputModified = true;
+	} break;
 	}
+
 
 	result = DefWindowProcW(hwnd, message, wparam, lparam);
 	return result;
@@ -90,8 +96,6 @@ waitForInput(AppWindow* window) {
 		}
 
 		switch (msg.message) {
-		case WM_PAINT:
-			window->platform.inputModified = true;
 
 		default: {
 			TranslateMessage(&msg);
