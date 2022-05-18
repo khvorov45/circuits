@@ -12,10 +12,16 @@ circuitsMain() {
 	Renderer* renderer = &renderer_;
 	initRenderer(renderer, 7680, 4320, varenaAllocator);
 
+	v4 clearCol = {0, 0, 0, 0};
+
 	while (window->isRunning) {
 		waitForInput(window);
 
-		clearBuffers(renderer, window->dim.x, window->dim.y);
+		clearBuffers(renderer, window->dim.x, window->dim.y, clearCol);
+
+		Rect2i tempRect = {{10, 50}, {90, 50}};
+		v4 tempCol = {0, 0, 1, 1};
+		drawRect(renderer, tempRect, tempCol);
 
 		displayPixels(window, renderer->pixels, renderer->dim.x, renderer->dim.y);
 	}

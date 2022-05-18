@@ -27,13 +27,17 @@ typedef uintptr_t usize;
 
 typedef int32_t b32;
 
-typedef struct v2i {
-	i32 x;
-	i32 y;
-} v2i;
+typedef float f32;
+typedef double f64;
 
 function void
 zeroPtr_(void* ptrInit, usize size) {
 	u8* ptr = ptrInit;
 	while (size--) {*ptr++ = 0;}
 } 
+
+//
+// SECTION CRT
+//
+
+int _fltused = 0x9875;
