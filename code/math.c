@@ -44,6 +44,22 @@ v2iMin(v2i val1, v2i val2) {
 }
 
 function v2i
+v2iDivScalar(v2i vec, i32 by) {
+	v2i result;
+	result.x = vec.x / by;
+	result.y = vec.y / by;
+	return result;
+}
+
+function Rect2i
+rectCenterDim(v2i center, v2i dim) {
+	Rect2i result;
+	result.dim = dim;
+	result.topleft = v2iSub(center, v2iDivScalar(dim, 2));
+	return result;
+}
+
+function v2i
 getRectBottomright(Rect2i rect) {
 	v2i result = v2iAdd(rect.topleft, rect.dim);
 	return result;
