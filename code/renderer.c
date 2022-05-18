@@ -38,3 +38,33 @@ drawRect(Renderer* renderer, Rect2i rect, v4 color) {
 		}
 	}
 }
+
+function void
+drawVLine(Renderer* renderer, i32 xCoord, i32 y1, i32 y2, v4 color) {
+	if (y1 > y2) {
+		i32 temp = y1;
+		y1 = y2;
+		y2 = temp;
+	}
+
+	u32 color32 = colorToU32ARGB(color);
+	for (i32 row = y1; row < y2; row += 1) {
+		i32 pxIndex = row * renderer->dim.x + xCoord;
+		renderer->pixels[pxIndex] = color32;
+	}
+}
+
+function void
+drawHLine(Renderer* renderer, i32 yCoord, i32 x1, i32 x2, v4 color) {
+	if (x1 > x2) {
+		i32 temp = x1;
+		x1 = x2;
+		x2 = temp;
+	}
+
+	u32 color32 = colorToU32ARGB(color);
+	for (i32 col = x1; col < x2; col += 1) {
+		i32 pxIndex = yCoord * renderer->dim.x + col;
+		renderer->pixels[pxIndex] = color32;
+	}
+}

@@ -20,8 +20,14 @@ circuitsMain() {
 		clearBuffers(renderer, window->dim.x, window->dim.y, clearCol);
 
 		Rect2i tempRect = {{10, 50}, {90, 50}};
-		v4 tempCol = {0, 0, 1, 1};
-		drawRect(renderer, tempRect, tempCol);
+		v4 tempRectCol = {0, 0, 1, 1};
+		drawRect(renderer, tempRect, tempRectCol);
+
+		v4 tempVLineCol = {0, 1, 1, 1};
+		drawVLine(renderer, 100, 100, 500, tempVLineCol);
+
+		v4 tempHLineCol = {1, 0, 1, 1};
+		drawHLine(renderer, 100, 100, 500, tempHLineCol);
 
 		displayPixels(window, renderer->pixels, renderer->dim.x, renderer->dim.y);
 	}
