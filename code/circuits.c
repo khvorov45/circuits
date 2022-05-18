@@ -24,10 +24,10 @@ circuitsMain() {
 		drawRect(renderer, tempRect, tempRectCol);
 
 		v4 tempVLineCol = {0, 1, 1, 1};
-		drawVLine(renderer, 100, 100, 500, tempVLineCol);
+		drawVLine(renderer, 100, -1000, 100000, tempVLineCol);
 
 		v4 tempHLineCol = {1, 0, 1, 1};
-		drawHLine(renderer, 100, 100, 500, tempHLineCol);
+		drawHLine(renderer, 100, -1000, 100000, tempHLineCol);
 
 		displayPixels(window, renderer->pixels, renderer->dim.x, renderer->dim.y);
 	}

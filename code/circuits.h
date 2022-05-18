@@ -13,6 +13,7 @@
 #define isPowerOf2(x) (((x) & ((x) - 1)) == 0)
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define min(a, b) (((a) < (b)) ? (a) : (b))
+#define clamp(x, min, max) (((x) < (min)) ? (min) : ((x) > (max)) ? (max) : (x))
 
 typedef int32_t i32;
 typedef int64_t i64;
