@@ -12,7 +12,7 @@ typedef struct Rect2i {
 } Rect2i;
 
 function v2i
-v2Add(v2i val1, v2i val2) {
+v2iAdd(v2i val1, v2i val2) {
 	v2i result;
 	result.x = val1.x + val2.x;
 	result.y = val1.y + val2.y;
@@ -20,8 +20,46 @@ v2Add(v2i val1, v2i val2) {
 }
 
 function v2i
+v2iSub(v2i val1, v2i val2) {
+	v2i result;
+	result.x = val1.x - val2.x;
+	result.y = val1.y - val2.y;
+	return result;
+}
+
+function v2i
+v2iMax(v2i val1, v2i val2) {
+	v2i result;
+	result.x = max(val1.x, val2.x);
+	result.y = max(val1.y, val2.y);
+	return result;
+}
+
+function v2i
+v2iMin(v2i val1, v2i val2) {
+	v2i result;
+	result.x = min(val1.x, val2.x);
+	result.y = min(val1.y, val2.y);
+	return result;
+}
+
+function v2i
 getRectBottomright(Rect2i rect) {
-	v2i result = v2Add(rect.topleft, rect.dim);
+	v2i result = v2iAdd(rect.topleft, rect.dim);
+	return result;
+}
+
+function Rect2i
+clipRectToRect(Rect2i rect, Rect2i clip) {
+	v2i resultTopleft = v2iMax(rect.topleft, clip.topleft);
+
+	v2i rectBottomright = getRectBottomright(rect);
+	v2i clipBottomright = getRectBottomright(clip);
+
+	v2i resultBottomright = v2iMin(rectBottomright, clipBottomright);
+
+	v2i resultDim = v2iSub(resultBottomright, resultTopleft);
+	Rect2i result = {resultTopleft, resultDim};
 	return result;
 }
 

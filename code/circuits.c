@@ -19,7 +19,7 @@ circuitsMain() {
 
 		clearBuffers(renderer, window->dim.x, window->dim.y, clearCol);
 
-		Rect2i tempRect = {{10, 50}, {90, 50}};
+		Rect2i tempRect = {{-10, -50}, {9099999, 509999999}};
 		v4 tempRectCol = {0, 0, 1, 1};
 		drawRect(renderer, tempRect, tempRectCol);
 

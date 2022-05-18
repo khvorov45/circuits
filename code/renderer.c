@@ -4,6 +4,13 @@ typedef struct Renderer {
 	v2i maxDim;
 } Renderer;
 
+function Rect2i
+clipRectToRenderBounds(Renderer* renderer, Rect2i rect) {
+	Rect2i renderBounds = {{0, 0}, renderer->dim};
+	Rect2i result = clipRectToRect(rect, renderBounds);	
+	return result;
+}
+
 function void
 initRenderer(Renderer* renderer, i32 maxwidth, i32 maxheight, Allocator allocator) {
 	zeroPtr(renderer);
@@ -24,10 +31,11 @@ clearBuffers(Renderer* renderer, i32 width, i32 height, v4 col) {
 }
 
 function void
-drawRect(Renderer* renderer, Rect2i rect, v4 color) {
+drawRect(Renderer* renderer, Rect2i rectInit, v4 color) {
 
 	u32 color32 = colorToU32ARGB(color);
 
+	Rect2i rect = clipRectToRenderBounds(renderer, rectInit);
 	v2i bottomright = getRectBottomright(rect);
 
 	for (i32 row = rect.topleft.y; row < bottomright.y; row += 1) {
