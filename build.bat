@@ -1,7 +1,5 @@
 @echo off
 
-call msvc/setup.bat
-
 cl -Od -Zi ^
 	-DCIRCUITS_WINDOWS ^
 	-nologo -Zl -TC -GS- -std:c17 ^
