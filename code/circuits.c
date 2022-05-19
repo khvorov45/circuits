@@ -59,21 +59,22 @@ typedef struct Chip {
 function void 
 drawChip(Renderer* renderer, Chip chip, v2i center) {
 	v2i dim = {100, 100};
-	Rect2i rect = rectCenterDim(center, dim);
+	Rect2i bodyRect = rectCenterDim(center, dim);
 	v4 col = {1, 0, 0, 1};
-	drawRect(renderer, rect, col);
+	drawRect(renderer, bodyRect, col);
 
-	v2i rectBottomright = getRectBottomright(rect);
+	v2i bodyRectBottomright = getRectBottomright(bodyRect);
 
 	v4 pinCol = {1, 1, 0, 1};
+	i32 pinGirth = 2;
 	i32 pinLength = 50;
 
-	i32 pinStep = rect.dim.x / (chip.inputCount + 1);
-	i32 curPinX = rect.topleft.x + pinStep; 
+	i32 pinStep = bodyRect.dim.x / (chip.inputCount + 1);
+	Rect2i curPinRect = {{bodyRect.topleft.x + pinStep, bodyRectBottomright.y}, {pinGirth, pinLength}};
 	for (i32 inputIndex = 0; inputIndex < chip.inputCount; inputIndex += 1) {
 
-		drawVLine(renderer, curPinX, rectBottomright.y, rectBottomright.y + pinLength, pinCol);
-		curPinX += pinStep;
+		drawRect(renderer, curPinRect, pinCol);
+		curPinRect.topleft.x += pinStep;
 	}
 }
 
