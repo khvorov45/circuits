@@ -1,3 +1,6 @@
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #if CIRCUITS_WINDOWS
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
@@ -139,6 +142,9 @@ circuitsMain() {
 	initRenderer(renderer, 7680, 4320, varenaAllocator);
 
 	v4 clearCol = {0, 0, 0, 0};
+
+	FT_Library library;
+	FT_Init_FreeType(&library);
 
 	while (window->isRunning) {
 		waitForInput(window);
