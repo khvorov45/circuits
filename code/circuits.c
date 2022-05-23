@@ -133,6 +133,12 @@ circuitsMain() {
 	varenaInit(&varena, 1 * GIGABYTE, 1 * MEGABYTE);
 	Allocator varenaAllocator = varenaAllocatorCreate(&varena);
 
+	MemoryPool mempool;
+	mempoolInit(&mempool, 10 * MEGABYTE, varenaAllocator);
+	Allocator mempoolAllocator = mempoolAllocatorCreate(&mempool);
+
+	alloc(5 * MEGABYTE, MEGABYTE, mempoolAllocator);
+
 	AppWindow window_ = {0};
 	AppWindow* window = &window_;
 	initWindow(window, 1000, 1000);

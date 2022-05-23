@@ -28,6 +28,26 @@ typedef struct VirtualArena {
 	i32 used;
 } VirtualArena;
 
+typedef struct PoolMarker {
+	struct PoolChunk* chunk;
+	b32 freeTillNext;
+	struct PoolMarker* next;
+	struct PoolMarker* prev;
+} PoolMarker;
+
+typedef struct PoolChunk {
+	i32 size;
+	PoolMarker* firstMarker;
+	struct PoolChunk* next;
+	struct PoolChunk* prev;
+} PoolChunk;
+
+typedef struct MemoryPool {
+	i32 minChunkSize;
+	PoolChunk* firstChunk;
+	Allocator chunkAllocator;
+} MemoryPool;
+
 #if CIRCUITS_WINDOWS
 function void
 vmemReserve(i32 size, void** ptr, i32* sizeActual) {
@@ -115,5 +135,141 @@ varenaAllocatorProc(void* data, AllocatorMode mode, i32 size, i32 align, void* o
 function Allocator
 varenaAllocatorCreate(VirtualArena* varena) {
 	Allocator result = {varena, varenaAllocatorProc};
+	return result;
+}
+
+function AllocatorError
+mempoolInit(MemoryPool* pool, i32 minChunkSize, Allocator chunkAllocator) {
+	zeroPtr(pool);
+	AllocatorProcResult firstChunkAllocResult =
+		chunkAllocator.proc(chunkAllocator.data, AllocatorMode_Alloc, minChunkSize, sizeof(void*), 0);
+
+	if (firstChunkAllocResult.err == AllocatorError_None) {
+		pool->minChunkSize = minChunkSize;
+		pool->firstChunk = (PoolChunk*)(firstChunkAllocResult.ptr);
+		pool->chunkAllocator = chunkAllocator;
+
+		zeroPtr(pool->firstChunk);
+		pool->firstChunk->size = minChunkSize;
+
+		pool->firstChunk->firstMarker = (PoolMarker*)((u8*)firstChunkAllocResult.ptr + sizeof(PoolChunk));
+		zeroPtr(pool->firstChunk->firstMarker);
+		pool->firstChunk->firstMarker->freeTillNext = true;
+		pool->firstChunk->firstMarker->chunk = pool->firstChunk;
+	}
+
+	return firstChunkAllocResult.err;
+}
+
+function AllocatorProcResult
+mempoolAllocatorProc(void* data, AllocatorMode mode, i32 size, i32 align, void* oldptr) {
+	AllocatorProcResult result = {0};
+
+	MemoryPool* pool = (MemoryPool*)data;
+
+	switch (mode) {
+	case AllocatorMode_Alloc: {
+		b32 found = false;
+		for (PoolChunk* chunk = pool->firstChunk; chunk != 0 && !found; chunk = chunk->next) {
+			for (PoolMarker* marker = chunk->firstMarker; marker != 0 && !found; marker = marker->next) {
+				if (marker->freeTillNext) {
+
+					usize nextAddress;
+					if (marker->next == 0) {
+						nextAddress = (usize)((u8*)(chunk) + (usize)(chunk->size));
+					} else {
+						nextAddress = (usize)marker->next;
+					}
+
+					usize freeStart = (usize)((u8*)(marker) + sizeof(PoolMarker));
+					usize freeBytes = nextAddress - (usize)freeStart;
+
+					void* testData = (void*)freeStart;
+					i32 sizeAligned = size;
+					alignPtr(&testData, align, &sizeAligned);
+					if ((usize)sizeAligned <= freeBytes) {
+						result.ptr = testData;
+						found = true;
+						marker->freeTillNext = false;
+
+						PoolMarker markerCopy = *marker;
+						marker = (PoolMarker*)((u8*)result.ptr - sizeof(PoolMarker));
+						*marker = markerCopy;
+						if (marker->prev != 0) {
+							marker->prev->next = marker;
+						}
+						if (marker->next != 0) {
+							marker->next->prev = marker;
+						}
+
+						if (freeBytes - (usize)sizeAligned >= sizeof(PoolMarker) + 1024) {
+							PoolMarker* newMarker = (PoolMarker*)((u8*)result.ptr + size);
+							newMarker->next = marker->next;
+							newMarker->prev = marker;
+							newMarker->freeTillNext = true;
+
+							marker->next = newMarker;
+							if (newMarker->next) {
+								newMarker->next->prev = newMarker;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (!found) {
+			assert(!"allocate another chunk");
+		}
+	} break;
+
+	case AllocatorMode_Free: {
+		PoolMarker* marker = (PoolMarker*)((u8*)oldptr - sizeof(PoolMarker));
+		marker->freeTillNext = true;
+
+		for (PoolMarker* nextMarker = marker->next;;) {
+			if (nextMarker == 0) {
+				marker->next = 0;
+				break;
+			} else {
+				if (nextMarker->freeTillNext) {
+					nextMarker = nextMarker->next;
+				} else {
+					marker->next = nextMarker;
+					marker->next->prev = marker;
+					break;
+				}
+			}
+		}
+
+		if (marker->prev == 0) {
+			PoolMarker markerCopy = *marker;
+			marker->chunk->firstMarker = (PoolMarker*)((u8*)(marker->chunk) + sizeof(PoolChunk));
+			*(marker->chunk->firstMarker) = markerCopy;
+			if (marker->chunk->firstMarker->next != 0) {
+				marker->chunk->firstMarker->next->prev = marker->chunk->firstMarker;
+			}
+		} else {
+			for (PoolMarker* prevMarker = marker->prev; prevMarker != 0 && prevMarker->freeTillNext;) {
+				prevMarker->next = marker->next;
+				if (prevMarker->next != 0) {
+					prevMarker->next->prev = prevMarker;
+				}
+				prevMarker = prevMarker->prev;
+			}
+		}
+	} break;
+
+	case AllocatorMode_Resize: {
+		assert(!"pool resize");
+	} break;
+	}
+
+	return result;
+}
+
+function Allocator
+mempoolAllocatorCreate(MemoryPool* pool) {
+	Allocator result = {pool, mempoolAllocatorProc};
 	return result;
 }
