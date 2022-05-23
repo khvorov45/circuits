@@ -4,6 +4,14 @@ typedef struct Renderer {
 	v2i maxDim;
 } Renderer;
 
+typedef enum CirclePart {
+	CirclePart_All,
+	CirclePart_Top,
+	CirclePart_Bottom,
+	CirclePart_Left,
+	CirclePart_Right,
+} CirclePart;
+
 function Rect2i
 clipRectToRenderBounds(Renderer* renderer, Rect2i rect) {
 	Rect2i renderBounds = {{0, 0}, renderer->dim};
@@ -73,7 +81,7 @@ drawHLine(Renderer* renderer, i32 yCoord, i32 xStart, i32 xEnd, u32 color) {
 }
 
 function void
-drawCircle(Renderer* renderer, v2i center, i32 radius, v4 color) {
+drawCircle(Renderer* renderer, v2i center, i32 radius, v4 color, CirclePart part) {
 
 	u32 color32 = colorToU32ARGB(color);
 
@@ -82,10 +90,35 @@ drawCircle(Renderer* renderer, v2i center, i32 radius, v4 color) {
 	i32 curMidError = 1 - radius;
 	
 	while (curX > curY) {
-		drawHLine(renderer, center.y + curY, center.x - curX, center.y + curX, color32);
-		drawHLine(renderer, center.y - curY, center.x - curX, center.y + curX, color32);
-		drawHLine(renderer, center.y - curX, center.x - curY, center.y + curY, color32);
-		drawHLine(renderer, center.y + curX, center.x - curY, center.y + curY, color32);
+
+		switch (part) {
+		case CirclePart_All: {
+			drawHLine(renderer, center.y + curY, center.x - curX, center.y + curX, color32);
+			drawHLine(renderer, center.y + curX, center.x - curY, center.y + curY, color32);
+			drawHLine(renderer, center.y - curY, center.x - curX, center.y + curX, color32);
+			drawHLine(renderer, center.y - curX, center.x - curY, center.y + curY, color32);
+		} break;
+		case CirclePart_Top: {
+			drawHLine(renderer, center.y - curY, center.x - curX, center.y + curX, color32);
+			drawHLine(renderer, center.y - curX, center.x - curY, center.y + curY, color32);
+		} break;
+		case CirclePart_Bottom: {
+			drawHLine(renderer, center.y + curY, center.x - curX, center.y + curX, color32);
+			drawHLine(renderer, center.y + curX, center.x - curY, center.y + curY, color32);
+		} break;
+		case CirclePart_Left: {
+			drawHLine(renderer, center.y + curY, center.x - curX, center.y, color32);
+			drawHLine(renderer, center.y + curX, center.x - curY, center.y, color32);
+			drawHLine(renderer, center.y - curY, center.x - curX, center.y, color32);
+			drawHLine(renderer, center.y - curX, center.x - curY, center.y, color32);
+		} break;
+		case CirclePart_Right: {
+			drawHLine(renderer, center.y + curY, center.x, center.y + curX, color32);
+			drawHLine(renderer, center.y + curX, center.x, center.y + curY, color32);
+			drawHLine(renderer, center.y - curY, center.x, center.y + curX, color32);
+			drawHLine(renderer, center.y - curX, center.x, center.y + curY, color32);
+		} break;
+		}
 		
 		curY += 1;
 

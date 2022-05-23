@@ -151,7 +151,7 @@ circuitsMain() {
 
 		v2i tempCircleCenter = {10, 10};
 		v4 tempCircleColor = {1, 0, 1, 1};
-		drawCircle(renderer, tempCircleCenter, 50, tempCircleColor);
+		drawCircle(renderer, tempCircleCenter, 50, tempCircleColor, CirclePart_Right);
 
 		displayPixels(window, renderer->pixels, renderer->dim.x, renderer->dim.y);
 	}
