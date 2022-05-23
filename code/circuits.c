@@ -149,6 +149,10 @@ circuitsMain() {
 		v2i tempChipCenter = {500, 500};
 		drawChip(renderer, tempChip, tempChipCenter);
 
+		v2i tempCircleCenter = {10, 10};
+		v4 tempCircleColor = {1, 0, 1, 1};
+		drawCircle(renderer, tempCircleCenter, 50, tempCircleColor);
+
 		displayPixels(window, renderer->pixels, renderer->dim.x, renderer->dim.y);
 	}
 }
