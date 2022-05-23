@@ -55,6 +55,24 @@ drawRect(Renderer* renderer, Rect2i rectInit, v4 color) {
 }
 
 function void
+drawHLine(Renderer* renderer, i32 yCoord, i32 xStart, i32 xEnd, u32 color) {
+	if (xStart > xEnd) {
+		i32 temp = xStart;
+		xStart = xEnd;
+		xEnd = temp;
+	}
+
+	if (xStart < renderer->dim.x && xEnd >= 0 && yCoord > 0 && yCoord < renderer->dim.y) {
+		xStart = max(xStart, 0);
+		xEnd = min(xEnd, renderer->dim.x - 1);
+
+		for (i32 xCoord = xStart; xCoord <= xEnd; xCoord += 1) {
+			renderer->pixels[yCoord * renderer->dim.x + xCoord] = color;
+		}
+	}
+}
+
+function void
 drawCircle(Renderer* renderer, v2i center, i32 radius, v4 color) {
 
 	u32 color32 = colorToU32ARGB(color);
@@ -62,15 +80,13 @@ drawCircle(Renderer* renderer, v2i center, i32 radius, v4 color) {
 	i32 curX = radius;
 	i32 curY = 0;
 	i32 curMidError = 1 - radius;
-
-	drawPixel(renderer, curX + center.x, curY + center.y, color32);
-	if (radius > 0) {
-		drawPixel(renderer, -curX + center.x, curY + center.y, color32);
-		drawPixel(renderer, curY + center.x, curX + center.y, color32);
-		drawPixel(renderer, curY + center.x, -curX + center.y, color32);
-	}
-
+	
 	while (curX > curY) {
+		drawHLine(renderer, center.y + curY, center.x - curX, center.y + curX, color32);
+		drawHLine(renderer, center.y - curY, center.x - curX, center.y + curX, color32);
+		drawHLine(renderer, center.y - curX, center.x - curY, center.y + curY, color32);
+		drawHLine(renderer, center.y + curX, center.x - curY, center.y + curY, color32);
+		
 		curY += 1;
 
 		if (curMidError <= 0) {
@@ -78,22 +94,6 @@ drawCircle(Renderer* renderer, v2i center, i32 radius, v4 color) {
 		} else {
 			curX -= 1;
 			curMidError += 2 * curY - 2 * curX + 1;
-		}
-
-		if (curX < curY) {
-			break;
-		}
-
-		drawPixel(renderer, curX + center.x, curY + center.y, color32);
-		drawPixel(renderer, -curX + center.x, curY + center.y, color32);
-		drawPixel(renderer, curX + center.x, -curY + center.y, color32);
-		drawPixel(renderer, -curX + center.x, -curY + center.y, color32);
-
-		if (curX != curY) {
-			drawPixel(renderer, curY + center.x, curX + center.y, color32);
-			drawPixel(renderer, -curY + center.x, curX + center.y, color32);
-			drawPixel(renderer, curY + center.x, -curX + center.y, color32);
-			drawPixel(renderer, -curY + center.x, -curX + center.y, color32);
 		}
 	}
 }
