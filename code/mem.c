@@ -197,6 +197,8 @@ mempoolAllocatorProc(void* data, AllocatorMode mode, i32 size, i32 align, void* 
 						*marker = markerCopy;
 						if (marker->prev != 0) {
 							marker->prev->next = marker;
+						} else {
+							chunk->firstMarker = marker;
 						}
 						if (marker->next != 0) {
 							marker->next->prev = marker;
@@ -225,6 +227,7 @@ mempoolAllocatorProc(void* data, AllocatorMode mode, i32 size, i32 align, void* 
 
 	case AllocatorMode_Free: {
 		PoolMarker* marker = (PoolMarker*)((u8*)oldptr - sizeof(PoolMarker));
+		assert(!marker->freeTillNext);
 		marker->freeTillNext = true;
 
 		for (PoolMarker* nextMarker = marker->next;;) {
@@ -244,10 +247,11 @@ mempoolAllocatorProc(void* data, AllocatorMode mode, i32 size, i32 align, void* 
 
 		if (marker->prev == 0) {
 			PoolMarker markerCopy = *marker;
-			marker->chunk->firstMarker = (PoolMarker*)((u8*)(marker->chunk) + sizeof(PoolChunk));
-			*(marker->chunk->firstMarker) = markerCopy;
-			if (marker->chunk->firstMarker->next != 0) {
-				marker->chunk->firstMarker->next->prev = marker->chunk->firstMarker;
+			PoolChunk* chunk = markerCopy.chunk;
+			chunk->firstMarker = (PoolMarker*)((u8*)chunk + sizeof(PoolChunk));
+			*(chunk->firstMarker) = markerCopy;
+			if (chunk->firstMarker->next != 0) {
+				chunk->firstMarker->next->prev = chunk->firstMarker;
 			}
 		} else {
 			for (PoolMarker* prevMarker = marker->prev; prevMarker != 0 && prevMarker->freeTillNext;) {
